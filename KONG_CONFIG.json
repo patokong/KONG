@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "rooms": {
+    "K1": {
+      "title": "K1",
+      "roomCode": "K1",
+      "strain": "G47",
+      "startDate": "2026-09-05",
+      "weeks": 9,
+      "lightOn": "01:00",
+      "processes": [
+        {
+          "day": 10,
+          "name": "TASK 1"
+        },
+        {
+          "day": 21,
+          "name": "TASK 2"
+        },
+        {
+          "day": 42,
+          "name": "TASK 3"
+        }
+      ]
+    },
+
+    "K2": {
+      "title": "K2",
+      "roomCode": "K2",
+      "strain": "G47",
+      "startDate": "2026-09-05",
+      "weeks": 9,
+      "lightOn": "01:00",
+      "processes": []
+    },
+
+    "B1": {
+      "title": "B1",
+      "roomCode": "B1",
+      "strain": "G47",
+      "startDate": "2026-09-05",
+      "weeks": 9,
+      "lightOn": "01:00",
+      "processes": []
+    },
+
+    "B2": {
+      "title": "B2",
+      "roomCode": "B2",
+      "strain": "G47",
+      "startDate": "2026-09-05",
+      "weeks": 9,
+      "lightOn": "01:00",
+      "processes": []
+    }
+  }
+}
