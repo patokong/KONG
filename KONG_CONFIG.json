@@ -1,11 +1,11 @@
 {
-  "version": 1,
+  "version": 2,
   "rooms": {
     "K1": {
       "title": "K1",
       "roomCode": "K1",
       "strain": "G47",
-      "startDate": "2026-09-05",
+      "startDate": "2026-08-21",
       "weeks": 9,
       "lightOn": "01:00",
       "processes": [
@@ -23,7 +23,6 @@
         }
       ]
     },
-
     "K2": {
       "title": "K2",
       "roomCode": "K2",
@@ -33,7 +32,6 @@
       "lightOn": "01:00",
       "processes": []
     },
-
     "B1": {
       "title": "B1",
       "roomCode": "B1",
@@ -43,7 +41,6 @@
       "lightOn": "01:00",
       "processes": []
     },
-
     "B2": {
       "title": "B2",
       "roomCode": "B2",
