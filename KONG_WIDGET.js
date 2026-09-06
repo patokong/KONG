@@ -1,18 +1,38 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // KONG — BLOOM ROOM WIDGET
-// V16 — PROCESS STATUS COLORS
+// V17 — REMOTE ROOMS
 //
-// NORMAL       = BLACK
-// PROCESS +2D  = YELLOW
-// PROCESS +1D  = ORANGE
+// CENTRAL CONFIG:
+// KONG_CONFIG.json
+//
+// WIDGET PARAMETER:
+// K1 / K2 / B1 / B2 / ETC.
+//
+// NORMAL        = BLACK
+// PROCESS +2D   = YELLOW
+// PROCESS +1D   = ORANGE
 // PROCESS TODAY = RED
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// REMOTE CONFIG
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const CONFIG_URL =
+  "https://raw.githubusercontent.com/patokong/KONG/main/KONG_CONFIG.json";
+
 const fm = FileManager.local();
+
+const CACHE_FILE =
+  fm.joinPath(
+    fm.documentsDirectory(),
+    "KONG_REMOTE_CONFIG_CACHE.json"
+  );
 
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// NORMAL COLORS
+// COLORS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 const GREEN = new Color("#63D66B");
@@ -21,11 +41,6 @@ const GRAY = new Color("#777777");
 const LIGHT_GRAY = new Color("#999999");
 const DARK_GRAY = new Color("#292929");
 const BLACK = new Color("#050505");
-
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// STATUS COLORS
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 const STATUS_RED = new Color("#FF3B30");
 const STATUS_ORANGE = new Color("#FF9500");
@@ -38,27 +53,11 @@ const STATUS_BOX_TEXT = new Color("#555555");
 
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// UNIQUE ROOM
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const SCRIPT_NAME = Script.name();
-
-const ROOM_ID = SCRIPT_NAME
-  .trim()
-  .toUpperCase()
-  .replace(/[^A-Z0-9_-]/g, "_");
-
-const configFile = fm.joinPath(
-  fm.documentsDirectory(),
-  `KONG_ROOM_${ROOM_ID}.json`
-);
-
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // DATE HELPERS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 function normalize(date) {
+
   return new Date(
     date.getFullYear(),
     date.getMonth(),
@@ -66,12 +65,19 @@ function normalize(date) {
   );
 }
 
+
 function todayStart() {
-  return normalize(new Date());
+
+  return normalize(
+    new Date()
+  );
 }
 
+
 function addDays(date, amount) {
-  const d = new Date(date);
+
+  const d =
+    new Date(date);
 
   d.setDate(
     d.getDate() + amount
@@ -80,7 +86,9 @@ function addDays(date, amount) {
   return normalize(d);
 }
 
+
 function daysBetween(a, b) {
+
   return Math.floor(
     (
       normalize(a).getTime() -
@@ -89,26 +97,12 @@ function daysBetween(a, b) {
   );
 }
 
-function dateToString(date) {
-
-  const y = date.getFullYear();
-
-  const m =
-    String(
-      date.getMonth() + 1
-    ).padStart(2, "0");
-
-  const d =
-    String(
-      date.getDate()
-    ).padStart(2, "0");
-
-  return `${y}-${m}-${d}`;
-}
 
 function stringToDate(value) {
 
-  const p = value.split("-");
+  const p =
+    String(value)
+      .split("-");
 
   return new Date(
     Number(p[0]),
@@ -117,40 +111,14 @@ function stringToDate(value) {
   );
 }
 
-function timeToString(date) {
 
-  const h =
-    String(
-      date.getHours()
-    ).padStart(2, "0");
+function formatClock(
+  hour,
+  minute
+) {
 
-  const m =
-    String(
-      date.getMinutes()
-    ).padStart(2, "0");
-
-  return `${h}:${m}`;
-}
-
-function timeStringToDate(value) {
-
-  const p = value.split(":");
-
-  const d = new Date();
-
-  d.setHours(
-    Number(p[0]),
-    Number(p[1]),
-    0,
-    0
-  );
-
-  return d;
-}
-
-function formatClock(hour, minute) {
-
-  const d = new Date();
+  const d =
+    new Date();
 
   d.setHours(
     hour,
@@ -159,10 +127,14 @@ function formatClock(hour, minute) {
     0
   );
 
-  const f = new DateFormatter();
+  const f =
+    new DateFormatter();
 
-  f.locale = "en_US";
+  f.locale =
+    "en_US";
+
   f.useNoDateStyle();
+
   f.useShortTimeStyle();
 
   return f.string(d);
@@ -170,186 +142,16 @@ function formatClock(hour, minute) {
 
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// CONFIG
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-function defaultConfig() {
-  return {
-    title: SCRIPT_NAME,
-    roomCode: "K",
-    strain: "G47",
-    startDate: dateToString(todayStart()),
-    weeks: 9,
-    lightOn: "01:00"
-  };
-}
-
-function loadConfig() {
-
-  const defaults = defaultConfig();
-
-  if (!fm.fileExists(configFile)) {
-    return defaults;
-  }
-
-  try {
-
-    return {
-      ...defaults,
-      ...JSON.parse(
-        fm.readString(configFile)
-      )
-    };
-
-  } catch (e) {
-    return defaults;
-  }
-}
-
-function saveConfig(cfg) {
-
-  fm.writeString(
-    configFile,
-    JSON.stringify(cfg)
-  );
-}
-
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// EDIT ROOM
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-async function editRoomInfo(cfg) {
-
-  const a = new Alert();
-
-  a.title = "ROOM INFORMATION";
-
-  a.addTextField(
-    "ROOM TITLE",
-    cfg.title
-  );
-
-  a.addTextField(
-    "ROOM CODE",
-    cfg.roomCode
-  );
-
-  a.addTextField(
-    "STRAIN",
-    cfg.strain
-  );
-
-  a.addAction("SAVE");
-  a.addCancelAction("CANCEL");
-
-  const result = await a.present();
-
-  if (result === -1) {
-    return cfg;
-  }
-
-  const title =
-    a.textFieldValue(0).trim();
-
-  const code =
-    a.textFieldValue(1).trim();
-
-  const strain =
-    a.textFieldValue(2).trim();
-
-  if (title) cfg.title = title;
-  if (code) cfg.roomCode = code;
-  if (strain) cfg.strain = strain;
-
-  return cfg;
-}
-
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// BLOOM DATE
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-async function chooseBloomDate(cfg) {
-
-  const picker = new DatePicker();
-
-  picker.initialDate =
-    stringToDate(cfg.startDate);
-
-  const selected =
-    await picker.pickDate();
-
-  if (selected) {
-
-    cfg.startDate =
-      dateToString(selected);
-  }
-
-  return cfg;
-}
-
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// LIGHT TIME
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-async function chooseLightTime(cfg) {
-
-  const picker = new DatePicker();
-
-  picker.initialDate =
-    timeStringToDate(cfg.lightOn);
-
-  const selected =
-    await picker.pickTime();
-
-  if (selected) {
-
-    cfg.lightOn =
-      timeToString(selected);
-  }
-
-  return cfg;
-}
-
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// FLOWER LENGTH
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-async function chooseWeeks(cfg) {
-
-  const a = new Alert();
-
-  a.title = "FLOWER LENGTH";
-
-  a.addAction("8 WEEKS");
-  a.addAction("9 WEEKS");
-  a.addCancelAction("CANCEL");
-
-  const result =
-    await a.presentSheet();
-
-  if (result === 0) {
-    cfg.weeks = 8;
-  }
-
-  if (result === 1) {
-    cfg.weeks = 9;
-  }
-
-  return cfg;
-}
-
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // LIGHTS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-function getLightsOnText(lightOn) {
+function getLightsOnText(
+  lightOn
+) {
 
-  const p = lightOn.split(":");
+  const p =
+    String(lightOn)
+      .split(":");
 
   return formatClock(
     Number(p[0]),
@@ -357,9 +159,14 @@ function getLightsOnText(lightOn) {
   );
 }
 
-function getLightsOffText(lightOn) {
 
-  const p = lightOn.split(":");
+function getLightsOffText(
+  lightOn
+) {
+
+  const p =
+    String(lightOn)
+      .split(":");
 
   const start =
     Number(p[0]) * 60 +
@@ -381,49 +188,285 @@ function getLightsOffText(lightOn) {
 
 function bloomStage(day) {
 
-  if (day <= 7) return "TRANSITION";
-  if (day <= 21) return "STRETCH";
-  if (day <= 35) return "STACKING";
-  if (day <= 49) return "BULK";
-  if (day <= 56) return "FINISH";
+  if (day <= 7) {
+    return "TRANSITION";
+  }
+
+  if (day <= 21) {
+    return "STRETCH";
+  }
+
+  if (day <= 35) {
+    return "STACKING";
+  }
+
+  if (day <= 49) {
+    return "BULK";
+  }
+
+  if (day <= 56) {
+    return "FINISH";
+  }
 
   return "RIPENING";
 }
 
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// PROCESS / MILESTONES
+// DOWNLOAD REMOTE CONFIG
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-function milestoneForDay(day, totalDays) {
+async function downloadRemoteConfig() {
 
-  if (day === 10) {
-    return "T";
+  try {
+
+    const req =
+      new Request(
+        CONFIG_URL
+      );
+
+    req.timeoutInterval = 10;
+
+    const text =
+      await req.loadString();
+
+    const data =
+      JSON.parse(text);
+
+
+    if (
+      data &&
+      data.rooms
+    ) {
+
+      fm.writeString(
+        CACHE_FILE,
+        text
+      );
+
+      console.log(
+        "KONG: Remote config updated."
+      );
+
+      return data;
+    }
+
+  } catch (error) {
+
+    console.log(
+      "KONG CONFIG DOWNLOAD ERROR: " +
+      error
+    );
   }
 
-  if (day === 21) {
-    return "DEFOL";
+
+  // ─────────────────────────────
+  // OFFLINE CACHE
+  // ─────────────────────────────
+
+  try {
+
+    if (
+      fm.fileExists(
+        CACHE_FILE
+      )
+    ) {
+
+      const cached =
+        JSON.parse(
+          fm.readString(
+            CACHE_FILE
+          )
+        );
+
+      if (
+        cached &&
+        cached.rooms
+      ) {
+
+        console.log(
+          "KONG: Using cached config."
+        );
+
+        return cached;
+      }
+    }
+
+  } catch (error) {
+
+    console.log(
+      "KONG CACHE ERROR: " +
+      error
+    );
   }
 
-  if (day === 34) {
-    return "CLONS";
+
+  return null;
+}
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ROOM HELPERS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+function roomKeys(data) {
+
+  if (
+    !data ||
+    !data.rooms
+  ) {
+    return [];
   }
 
-  if (day === 41) {
-    return "T1";
+  return Object.keys(
+    data.rooms
+  );
+}
+
+
+function normalizeRoomID(value) {
+
+  return String(
+    value || ""
+  )
+    .trim()
+    .toUpperCase();
+}
+
+
+function getRoom(
+  data,
+  roomID
+) {
+
+  const wanted =
+    normalizeRoomID(
+      roomID
+    );
+
+  if (
+    !wanted ||
+    !data ||
+    !data.rooms
+  ) {
+    return null;
   }
 
-  if (day === 42) {
-    return "DEFOL";
+
+  // Exact key
+
+  if (
+    data.rooms[wanted]
+  ) {
+    return data.rooms[wanted];
   }
 
-  if (day === 52) {
-    return "T2";
+
+  // Case-insensitive fallback
+
+  for (
+    const key of
+    Object.keys(data.rooms)
+  ) {
+
+    if (
+      key.toUpperCase() ===
+      wanted
+    ) {
+
+      return data.rooms[key];
+    }
   }
 
-  if (day === totalDays) {
+
+  return null;
+}
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// PROCESSES
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+function getProcesses(cfg) {
+
+  if (
+    !cfg ||
+    !Array.isArray(
+      cfg.processes
+    )
+  ) {
+
+    return [];
+  }
+
+
+  return cfg.processes
+    .filter(p => {
+
+      return (
+        p &&
+        Number.isFinite(
+          Number(p.day)
+        ) &&
+        String(
+          p.name || ""
+        ).trim()
+      );
+
+    })
+    .map(p => {
+
+      return {
+        day: Number(p.day),
+        name:
+          String(p.name)
+            .trim()
+            .toUpperCase()
+      };
+
+    });
+}
+
+
+function milestoneForDay(
+  day,
+  cfg
+) {
+
+  const processes =
+    getProcesses(cfg);
+
+
+  const matches =
+    processes.filter(
+      p =>
+        p.day === day
+    );
+
+
+  if (
+    matches.length > 0
+  ) {
+
+    return matches
+      .map(p => p.name)
+      .join("/");
+  }
+
+
+  // Automatic harvest fallback
+
+  const totalDays =
+    Number(cfg.weeks) * 7;
+
+
+  if (
+    day === totalDays
+  ) {
+
     return "HARVEST";
   }
+
 
   return null;
 }
@@ -432,24 +475,25 @@ function milestoneForDay(day, totalDays) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // PROCESS STATUS
 //
-// TODAY      → RED
-// TOMORROW   → ORANGE
-// +2 DAYS    → YELLOW
-// NOTHING    → BLACK
+// TODAY    → RED
+// TOMORROW → ORANGE
+// +2 DAYS  → YELLOW
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 function getProcessStatus(
   bloomDay,
-  totalDays
+  cfg
 ) {
 
   const todayProcess =
     milestoneForDay(
       bloomDay,
-      totalDays
+      cfg
     );
 
+
   if (todayProcess) {
+
     return {
       level: 0,
       process: todayProcess,
@@ -461,10 +505,12 @@ function getProcessStatus(
   const tomorrowProcess =
     milestoneForDay(
       bloomDay + 1,
-      totalDays
+      cfg
     );
 
+
   if (tomorrowProcess) {
+
     return {
       level: 1,
       process: tomorrowProcess,
@@ -476,10 +522,12 @@ function getProcessStatus(
   const twoDaysProcess =
     milestoneForDay(
       bloomDay + 2,
-      totalDays
+      cfg
     );
 
+
   if (twoDaysProcess) {
+
     return {
       level: 2,
       process: twoDaysProcess,
@@ -497,201 +545,13 @@ function getProcessStatus(
 
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// NOTIFICATION HELPERS
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-function notificationDate(
-  bloomStart,
-  bloomDay,
-  hour,
-  minute,
-  dayOffset = 0
-) {
-
-  const eventDate =
-    addDays(
-      bloomStart,
-      bloomDay - 1 + dayOffset
-    );
-
-  eventDate.setHours(
-    hour,
-    minute,
-    0,
-    0
-  );
-
-  return eventDate;
-}
-
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// NOTIFICATION IDS
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-function allNotificationIDs() {
-
-  const days =
-    [21, 42, 56, 63];
-
-  const ids = [];
-
-  for (const day of days) {
-
-    ids.push(
-      `KONG_${ROOM_ID}_D${day}_PRE`
-    );
-
-    ids.push(
-      `KONG_${ROOM_ID}_D${day}_DAY`
-    );
-  }
-
-  return ids;
-}
-
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// CREATE NOTIFICATION
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-async function createRoomNotification(
-  identifier,
-  date,
-  title,
-  body
-) {
-
-  if (
-    date.getTime() <=
-    new Date().getTime()
-  ) {
-    return;
-  }
-
-  const n =
-    new Notification();
-
-  n.identifier =
-    identifier;
-
-  n.title =
-    title;
-
-  n.body =
-    body;
-
-  n.sound =
-    "alert";
-
-  n.threadIdentifier =
-    `KONG_${ROOM_ID}`;
-
-  n.setTriggerDate(
-    date
-  );
-
-  await n.schedule();
-}
-
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// PROGRAM NOTIFICATIONS
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-async function scheduleRoomNotifications(cfg) {
-
-  try {
-
-    await Notification.removePending(
-      allNotificationIDs()
-    );
-
-  } catch (e) {}
-
-
-  const bloomStart =
-    stringToDate(
-      cfg.startDate
-    );
-
-  const totalDays =
-    cfg.weeks * 7;
-
-  const room =
-    cfg.roomCode
-      .trim()
-      .toUpperCase();
-
-
-  const events = [
-    {
-      day: 21,
-      name: "Defoliation"
-    },
-    {
-      day: 42,
-      name: "Defoliation"
-    },
-    {
-      day: totalDays,
-      name: "Harvest"
-    }
-  ];
-
-
-  for (const event of events) {
-
-    // PREVIOUS DAY — 10 PM
-
-    const previousNight =
-      notificationDate(
-        bloomStart,
-        event.day,
-        22,
-        0,
-        -1
-      );
-
-
-    await createRoomNotification(
-      `KONG_${ROOM_ID}_D${event.day}_PRE`,
-      previousNight,
-      `Room (${room}) — Tomorrow`,
-      `Day ${event.day} ${event.name}`
-    );
-
-
-    // SAME DAY — 7:30 AM
-
-    const sameMorning =
-      notificationDate(
-        bloomStart,
-        event.day,
-        7,
-        30,
-        0
-      );
-
-
-    await createRoomNotification(
-      `KONG_${ROOM_ID}_D${event.day}_DAY`,
-      sameMorning,
-      `Room (${room})`,
-      `Day ${event.day} ${event.name}`
-    );
-  }
-}
-
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// EXACT CALENDAR IMAGE
+// CALENDAR IMAGE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 function makeCalendarImage(
   today,
   bloomStart,
-  totalDays,
+  cfg,
   statusMode
 ) {
 
@@ -714,7 +574,15 @@ function makeCalendarImage(
 
 
   const letters =
-    ["S", "M", "T", "W", "T", "F", "S"];
+    [
+      "S",
+      "M",
+      "T",
+      "W",
+      "T",
+      "F",
+      "S"
+    ];
 
 
   const cellWidth =
@@ -749,7 +617,11 @@ function makeCalendarImage(
       : LIGHT_GRAY;
 
 
-  for (let i = 0; i < 7; i++) {
+  for (
+    let i = 0;
+    i < 7;
+    i++
+  ) {
 
     const date =
       addDays(
@@ -766,10 +638,13 @@ function makeCalendarImage(
 
 
     const x =
-      i * cellWidth;
+      i *
+      cellWidth;
 
 
+    // ───────────────────────────
     // WEEKDAY
+    // ───────────────────────────
 
     ctx.setFont(
       Font.boldSystemFont(9)
@@ -799,7 +674,9 @@ function makeCalendarImage(
     );
 
 
+    // ───────────────────────────
     // DATE
+    // ───────────────────────────
 
     ctx.setFont(
       Font.boldSystemFont(16)
@@ -827,12 +704,14 @@ function makeCalendarImage(
     );
 
 
-    // MILESTONE
+    // ───────────────────────────
+    // PROCESS
+    // ───────────────────────────
 
     const milestone =
       milestoneForDay(
         flowerDay,
-        totalDays
+        cfg
       );
 
 
@@ -851,10 +730,28 @@ function makeCalendarImage(
       ctx.setTextAlignedCenter();
 
 
+      let display =
+        milestone;
+
+
+      if (
+        display.length > 9
+      ) {
+
+        display =
+          display.substring(
+            0,
+            9
+          );
+      }
+
+
       let y = 43;
 
 
-      for (const ch of milestone) {
+      for (
+        const ch of display
+      ) {
 
         ctx.drawTextInRect(
           ch,
@@ -867,6 +764,13 @@ function makeCalendarImage(
         );
 
         y += 5;
+
+
+        if (
+          y > 72
+        ) {
+          break;
+        }
       }
     }
   }
@@ -877,148 +781,65 @@ function makeCalendarImage(
 
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// SETTINGS MENU
+// ERROR WIDGET
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-async function configurationMenu() {
+function errorWidget(
+  title,
+  message
+) {
 
-  let cfg =
-    loadConfig();
-
-
-  while (true) {
-
-    const df =
-      new DateFormatter();
+  const widget =
+    new ListWidget();
 
 
-    df.dateFormat =
-      "MMM d, yyyy";
+  widget.backgroundColor =
+    BLACK;
 
 
-    const harvestDay =
-      cfg.weeks * 7;
+  widget.setPadding(
+    18,
+    18,
+    18,
+    18
+  );
 
 
-    const menu =
-      new Alert();
-
-
-    menu.title =
-      `KONG — ${SCRIPT_NAME}`;
-
-
-    menu.message =
-      `${cfg.title} · ${cfg.roomCode}\n` +
-      `${cfg.strain}\n` +
-      `Bloom: ${df.string(stringToDate(cfg.startDate))}\n` +
-      `${cfg.weeks} weeks · Harvest D${harvestDay}\n` +
-      `ON: ${getLightsOnText(cfg.lightOn)}\n` +
-      `OFF: ${getLightsOffText(cfg.lightOn)}`;
-
-
-    menu.addAction(
-      "✏️ ROOM / CODE / STRAIN"
-    );
-
-    menu.addAction(
-      "📅 BLOOM START"
-    );
-
-    menu.addAction(
-      "⏰ LIGHTS ON"
-    );
-
-    menu.addAction(
-      "🌸 FLOWER LENGTH"
-    );
-
-    menu.addAction(
-      "👁 PREVIEW"
-    );
-
-    menu.addCancelAction(
-      "DONE"
+  const titleText =
+    widget.addText(
+      title
     );
 
 
-    const result =
-      await menu.presentSheet();
+  titleText.font =
+    Font.boldSystemFont(18);
 
 
-    if (result === -1) {
-
-      saveConfig(cfg);
-
-      await scheduleRoomNotifications(
-        cfg
-      );
-
-      break;
-    }
+  titleText.textColor =
+    STATUS_RED;
 
 
-    if (result === 0) {
-
-      cfg =
-        await editRoomInfo(
-          cfg
-        );
-    }
+  widget.addSpacer(7);
 
 
-    if (result === 1) {
-
-      cfg =
-        await chooseBloomDate(
-          cfg
-        );
-    }
+  const messageText =
+    widget.addText(
+      message
+    );
 
 
-    if (result === 2) {
-
-      cfg =
-        await chooseLightTime(
-          cfg
-        );
-    }
+  messageText.font =
+    Font.systemFont(11);
 
 
-    if (result === 3) {
-
-      cfg =
-        await chooseWeeks(
-          cfg
-        );
-    }
+  messageText.textColor =
+    LIGHT_GRAY;
 
 
-    saveConfig(cfg);
+  messageText.lineLimit = 5;
 
 
-    if (
-      result === 0 ||
-      result === 1 ||
-      result === 3
-    ) {
-
-      await scheduleRoomNotifications(
-        cfg
-      );
-    }
-
-
-    if (result === 4) {
-
-      const preview =
-        await buildWidget(
-          cfg
-        );
-
-      await preview.presentMedium();
-    }
-  }
+  return widget;
 }
 
 
@@ -1026,15 +847,17 @@ async function configurationMenu() {
 // BUILD WIDGET
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-async function buildWidget(cfg) {
+async function buildWidget(
+  cfg
+) {
 
   const widget =
     new ListWidget();
 
 
-  // ─────────────────────────────
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // CALCULATIONS
-  // ─────────────────────────────
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   const today =
     todayStart();
@@ -1053,13 +876,16 @@ async function buildWidget(cfg) {
     ) + 1;
 
 
-  if (bloomDay < 1) {
+  if (
+    bloomDay < 1
+  ) {
+
     bloomDay = 1;
   }
 
 
   const totalDays =
-    cfg.weeks * 7;
+    Number(cfg.weeks) * 7;
 
 
   let currentWeek =
@@ -1073,7 +899,7 @@ async function buildWidget(cfg) {
       1,
       Math.min(
         currentWeek,
-        cfg.weeks
+        Number(cfg.weeks)
       )
     );
 
@@ -1084,14 +910,10 @@ async function buildWidget(cfg) {
     );
 
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // PROCESS STATUS
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
   const status =
     getProcessStatus(
       bloomDay,
-      totalDays
+      cfg
     );
 
 
@@ -1103,16 +925,11 @@ async function buildWidget(cfg) {
     status.background;
 
 
-  // Anything normally GREEN
-  // becomes BLACK when status active.
-
   const accentColor =
     statusActive
       ? BLACK
       : GREEN;
 
-
-  // White becomes gray.
 
   const primaryColor =
     statusActive
@@ -1153,6 +970,7 @@ async function buildWidget(cfg) {
   const main =
     widget.addStack();
 
+
   main.layoutHorizontally();
 
 
@@ -1163,13 +981,16 @@ async function buildWidget(cfg) {
   const left =
     main.addStack();
 
+
   left.layoutVertically();
+
 
   left.size =
     new Size(
       218,
       0
     );
+
 
   left.addSpacer(3);
 
@@ -1181,18 +1002,24 @@ async function buildWidget(cfg) {
   const top =
     left.addStack();
 
+
   top.layoutHorizontally();
 
 
   const titleSide =
     top.addStack();
 
+
   titleSide.layoutVertically();
 
 
   const title =
     titleSide.addText(
-      cfg.title.toUpperCase()
+      String(
+        cfg.title ||
+        cfg.roomCode ||
+        "KONG"
+      ).toUpperCase()
     );
 
 
@@ -1206,6 +1033,7 @@ async function buildWidget(cfg) {
 
   title.lineLimit = 1;
 
+
   title.minimumScaleFactor =
     0.6;
 
@@ -1215,6 +1043,7 @@ async function buildWidget(cfg) {
 
   const phase =
     titleSide.addStack();
+
 
   phase.layoutHorizontally();
 
@@ -1240,7 +1069,9 @@ async function buildWidget(cfg) {
 
 
   const stageText =
-    phase.addText(stage);
+    phase.addText(
+      stage
+    );
 
 
   stageText.font =
@@ -1298,7 +1129,10 @@ async function buildWidget(cfg) {
 
   const strain =
     strainBox.addText(
-      cfg.strain.toUpperCase()
+      String(
+        cfg.strain ||
+        "-"
+      ).toUpperCase()
     );
 
 
@@ -1331,7 +1165,8 @@ async function buildWidget(cfg) {
   const progress =
     Math.min(
       Math.max(
-        bloomDay / totalDays,
+        bloomDay /
+        totalDays,
         0
       ),
       1
@@ -1409,7 +1244,7 @@ async function buildWidget(cfg) {
     makeCalendarImage(
       today,
       bloomStart,
-      totalDays,
+      cfg,
       status
     );
 
@@ -1469,7 +1304,9 @@ async function buildWidget(cfg) {
   codeTopRow.backgroundColor =
     statusActive
       ? STATUS_BOX
-      : new Color("#202020");
+      : new Color(
+          "#202020"
+        );
 
 
   codeTopRow.cornerRadius = 6;
@@ -1487,7 +1324,10 @@ async function buildWidget(cfg) {
 
   const roomCode =
     codeTopRow.addText(
-      cfg.roomCode.toUpperCase()
+      String(
+        cfg.roomCode ||
+        "-"
+      ).toUpperCase()
     );
 
 
@@ -1609,7 +1449,8 @@ async function buildWidget(cfg) {
   const on =
     onRow.addText(
       getLightsOnText(
-        cfg.lightOn
+        cfg.lightOn ||
+        "01:00"
       )
     );
 
@@ -1672,7 +1513,8 @@ async function buildWidget(cfg) {
   const off =
     offRow.addText(
       getLightsOffText(
-        cfg.lightOn
+        cfg.lightOn ||
+        "01:00"
       )
     );
 
@@ -1696,24 +1538,237 @@ async function buildWidget(cfg) {
 
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// RUN
+// ROOM SELECTOR
+// Used when script is opened manually.
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-if (config.runsInWidget) {
+async function roomSelector(
+  data
+) {
 
-  const widget =
-    await buildWidget(
-      loadConfig()
+  const keys =
+    roomKeys(
+      data
     );
 
 
-  Script.setWidget(
-    widget
+  if (
+    keys.length === 0
+  ) {
+
+    const a =
+      new Alert();
+
+    a.title =
+      "KONG";
+
+    a.message =
+      "No rooms found.";
+
+    a.addAction(
+      "OK"
+    );
+
+    await a.present();
+
+    return;
+  }
+
+
+  const menu =
+    new Alert();
+
+
+  menu.title =
+    "KONG ROOMS";
+
+
+  menu.message =
+    "Select a room to preview.";
+
+
+  for (
+    const key of keys
+  ) {
+
+    const cfg =
+      data.rooms[key];
+
+
+    menu.addAction(
+      `${key} · ${
+        cfg.strain || ""
+      }`
+    );
+  }
+
+
+  menu.addCancelAction(
+    "DONE"
   );
+
+
+  const result =
+    await menu.presentSheet();
+
+
+  if (
+    result < 0
+  ) {
+    return;
+  }
+
+
+  const selectedKey =
+    keys[result];
+
+
+  const cfg =
+    data.rooms[
+      selectedKey
+    ];
+
+
+  const preview =
+    await buildWidget(
+      cfg
+    );
+
+
+  await preview.presentMedium();
+}
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// RUN
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const remoteData =
+  await downloadRemoteConfig();
+
+
+if (!remoteData) {
+
+  const widget =
+    errorWidget(
+      "KONG",
+      "Unable to download room configuration."
+    );
+
+
+  if (
+    config.runsInWidget
+  ) {
+
+    Script.setWidget(
+      widget
+    );
+
+  } else {
+
+    await widget.presentMedium();
+  }
+
+
+  Script.complete();
+
+  return;
+}
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// WIDGET MODE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+if (
+  config.runsInWidget
+) {
+
+  const parameter =
+    normalizeRoomID(
+      args.widgetParameter
+    );
+
+
+  if (!parameter) {
+
+    const available =
+      roomKeys(
+        remoteData
+      )
+        .join(
+          " · "
+        );
+
+
+    const widget =
+      errorWidget(
+        "SELECT ROOM",
+        `Add a Widget Parameter.\n\nAvailable: ${available}`
+      );
+
+
+    Script.setWidget(
+      widget
+    );
+
+
+  } else {
+
+    const room =
+      getRoom(
+        remoteData,
+        parameter
+      );
+
+
+    if (!room) {
+
+      const available =
+        roomKeys(
+          remoteData
+        )
+          .join(
+            " · "
+          );
+
+
+      const widget =
+        errorWidget(
+          `ROOM ${parameter}`,
+          `Not found.\n\nAvailable: ${available}`
+        );
+
+
+      Script.setWidget(
+        widget
+      );
+
+
+    } else {
+
+      const widget =
+        await buildWidget(
+          room
+        );
+
+
+      Script.setWidget(
+        widget
+      );
+    }
+  }
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// APP MODE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 } else {
 
-  await configurationMenu();
+  await roomSelector(
+    remoteData
+  );
 }
 
 
